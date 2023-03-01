@@ -1,19 +1,26 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE ExtendedDefaultRules #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Main (main) where
 
-import Text.SimpleJSON.Generic
-    ( Data, Typeable, encodeJSON, decodeJSON, JSON(..), JSValue(..), toJSObject, fromJSObject, Result(..) )
-import Text.SimpleJSON.Derive (makeJSON)
+import Text.SimpleJSON
+import Data.Data
 import Text.SimpleJSON.String ()
+import Text.SimpleJSON.DeriveVia
 import Text.ParserCombinators.Parsec ()
-import Data.DeriveTH (derive)
 
 
 data Foo = Foo{a :: Int, b :: Bool, c :: Baz} | None
+    deriving (Typeable, Data, Show, Eq, JSON)
+
+foo = Foo{a = 0, b = True, c = (Baz 5)}
+
+data Record = Record{x :: Int, y :: Double, z :: Float, s :: String} | EmptyDummy
     deriving (Typeable, Data, Show, Eq)
+    deriving (JSON)
+        via CustomJSON Record
 
 newtype Baz = Baz Int
     deriving (Typeable, Data, Show, Eq)
@@ -27,11 +34,8 @@ newtype New a = New a
 newtype Apples = Apples {noApples :: Int}
     deriving (Typeable, Data, Show, Eq)
 
-data Record = Record{x :: Int, y :: Double, z :: Float, s :: String}
-    deriving (Typeable, Data, Show, Eq)
 
 -- Using derivivng mechanism, automatically generating instance of JSON class
-$( derive makeJSON ''Record )
 
 rec :: Record
 rec = Record{x = 1, y = 2, z = 3.5, s = "hello"}
@@ -77,7 +81,8 @@ tests =
           testJSON atree,
           testJSON $ Apples 42,
           testJSON [Red .. Blue],
-          testDeriveJSON rec
+          testDeriveJSON rec,
+          testDeriveJSON foo
         ]
 
 main :: IO ()

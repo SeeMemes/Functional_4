@@ -9,6 +9,7 @@ module Text.SimpleJSON.Types(
     getField,
     setField,
     rmField,
+    makeObj,
     matchJSStructure,
 ) where
 
@@ -46,6 +47,9 @@ setField (JSONObject xs) k v = JSONObject ((k, v) : filter ((/= k) . fst) xs)
 
 rmField :: JSObject -> String -> JSObject
 rmField (JSONObject xs) k = JSONObject (filter ((/= k) . fst) xs)
+
+makeObj :: [(String, JSValue)] -> JSValue
+makeObj = JSObject . toJSObject
 
 sameConstructor :: (Data a1, Data a2) => a1 -> a2 -> Bool
 sameConstructor l r = toConstr l == toConstr r

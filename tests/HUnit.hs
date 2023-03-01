@@ -14,6 +14,7 @@ import Text.SimpleJSON ( JSValue(..), Result(..), JSON, decode )
 import Free.Commands
     ( Script, jsonToText, printt, jsonObjFromFile, matchJsonObject )
 import Data.Text (pack, unwords)
+import Data.Maybe (isJust)
 import Prelude hiding (unwords)
 import Free.Interpreter (runScript)
 
@@ -31,10 +32,8 @@ checkJSONPatternScript dataFilename patternFilename = do
    printt $ unwords [pack "pattern: ", dps]
 
    checkedData <- matchJsonObject dpattern dt
-   case checkedData of
-        Just _ -> return True
-        Nothing -> return False; 
-            
+   return $ isJust checkedData
+
 
 testFreeMonadScriptStructureTest :: String -> String -> Bool -> Test
 testFreeMonadScriptStructureTest dataFilename patternFilename pass = 

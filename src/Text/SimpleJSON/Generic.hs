@@ -1,12 +1,14 @@
 {-# LANGUAGE PatternGuards #-}
 {-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE DefaultSignatures #-}
+{-# LANGUAGE ConstrainedClassMethods #-}
 
 module Text.SimpleJSON.Generic(
-    module Text.SimpleJSON,
+    JSON(..),
     Data,
     Typeable,
-    toJSON,
-    fromJSON,
+    toJSON, toJSONGeneric,
+    fromJSON, fromJSONGeneric,
     encodeJSON,
     decodeJSON,
 ) where
@@ -33,9 +35,97 @@ import Data.Generics
       ext1R,
       extQ,
       extR )
-import Text.SimpleJSON
-import Text.SimpleJSON.String (parseJSValue)
+
+import Text.SimpleJSON.Result (Result(..))
+import Text.SimpleJSON.Types (
+    JSValue(..), JSObject(..), JSString(..),
+     fromJSString, toJSString, makeObj,
+     toJSObject
+ )
+import Text.SimpleJSON.String (parseJSValue, showJSValue)
 import Text.ParserCombinators.Parsec (parse)
+
+class JSON a where
+    readJSON :: JSValue -> Result a
+    default readJSON :: (Data a) => JSValue -> Result a
+    readJSON = fromJSONGeneric
+
+    showJSON :: a -> JSValue
+    default showJSON :: (Data a) => a -> JSValue
+    showJSON = toJSONGeneric
+
+    readJSONs :: JSValue -> Result [a]
+    readJSONs (JSArray a) = mapM readJSON a
+    readJSONs _ = Error "Unable to read list"
+
+    showJSONs :: [a] -> JSValue
+    showJSONs = JSArray . map showJSON
+
+
+instance JSON JSValue where
+    showJSON = id
+    readJSON = Ok
+
+second :: (a -> b) -> (x, a) -> (x, b)
+second f (a, b) = (a, f b)
+
+-- Ниже описаны функции readJSON и showJSON для каждого варианта конструктора
+
+instance JSON JSString where
+    readJSON (JSString s) = return s
+    readJSON _ = Error "Unable to read JSString"
+    showJSON = JSString
+
+instance JSON JSObject where
+    readJSON (JSObject o) =
+        let f (x, y) = do
+            y' <- readJSON y
+            return (x, y')
+         in toJSObject `fmap` mapM f (fromJSObject o)
+    readJSON _ = Error "Unable to read JSObject"
+    showJSON = JSObject . toJSObject . map (second showJSON) . fromJSObject
+
+instance JSON Bool where
+    showJSON = JSBool
+    readJSON (JSBool b) = return b
+    readJSON _ = Error "Unable to read Bool"
+
+instance JSON Char where
+    showJSON = JSString . toJSString . (:[])
+    showJSONs = JSString . toJSString
+
+    readJSON (JSString s) = case fromJSString s of
+        [c] -> return c
+        _ -> Error "Unable to read Char"
+    readJSON _ = Error "Unable to read Char"
+
+    readJSONs (JSString s) = return (fromJSString s)
+    readJSONs (JSArray a) = mapM readJSON a
+    readJSONs _ = Error "Unable to read String"
+
+instance JSON Integer where
+    showJSON = JSRational . fromIntegral
+    readJSON (JSRational i) = return $ round i
+    readJSON _ = Error "Unable to read Integer"
+
+instance JSON Int where
+    showJSON = JSRational . fromIntegral
+    readJSON (JSRational i) = return $ round i
+    readJSON _ = Error "Unable to read Int"
+
+instance JSON Double where
+    showJSON = JSRational . toRational
+    readJSON (JSRational r) = return $ fromRational r
+    readJSON _ = Error "Unable to read Double"
+
+instance JSON Float where
+    showJSON = JSRational . toRational
+    readJSON (JSRational r) = return $ fromRational r
+    readJSON _ = Error "Unable to read Float"
+
+instance JSON a => JSON [a] where
+    showJSON = showJSONs
+    readJSON = readJSONs
 
 type T a = a -> JSValue
 
