@@ -9,4 +9,4 @@ makeNTuple n =
     do varName <- newName "x"
        -- Фактически генерирует код подобный следующей лямбде следующей лямбде: x -> (x, x, x...)
        return $ LamE [VarP varName]
-                     (TupE $ replicate n $ (Just $ VarE varName))
+                     (TupE $ replicate n $ (VarE varName))
