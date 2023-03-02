@@ -3,8 +3,8 @@ import Data.Coerce
 import Data.Data
 
 import Text.SimpleJSON.Generic ( JSON(readJSON, showJSON), toJSONGeneric, fromJSONGeneric )
-import Text.SimpleJSON.Result ( Result )
-import Text.SimpleJSON.Types ( JSValue )
+import Text.SimpleJSON.Result ()
+import Text.SimpleJSON.Types ()
 
 newtype CustomJSON a = CustomJSON { unCustomJSON :: a }
 
