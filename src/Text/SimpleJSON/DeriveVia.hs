@@ -2,8 +2,7 @@ module Text.SimpleJSON.DeriveVia where
 import Data.Coerce
 import Data.Data
 
-import Text.SimpleJSON.Generic
-( JSON(readJSON, showJSON), toJSONGeneric, fromJSONGeneric )
+import Text.SimpleJSON.Generic ( JSON(readJSON, showJSON), toJSONGeneric, fromJSONGeneric )
 import Text.SimpleJSON.Result ( Result )
 import Text.SimpleJSON.Types ( JSValue )
 
