@@ -19,11 +19,6 @@ module Text.SimpleJSON(
     decodeJSON, encodeJSON
 ) where
 
-import Control.Applicative()
-import Control.Monad (ap, liftM)
-import Control.Monad.Fail
-import qualified Data.Map as M()
-import qualified Data.Text as T
 import Text.SimpleJSON.String
     ( StringRepresentable(..), parseJSValue, showJSValue )
 
@@ -43,4 +38,3 @@ decode s = case parse parseJSValue "" (toString s) of
 -- Вывод JSON файла
 encode :: (JSON a) => a -> String
 encode = flip showJSValue [] . showJSON
-
