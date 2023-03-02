@@ -6,7 +6,7 @@ module Text.SimpleJSON.Result(
 
 import Control.Applicative()
 import Control.Monad (ap, liftM)
-import Control.Monad.Fail()
+import Control.Monad.Fail
 -- так как монада Result требует описание аппликативного функтора, то
 -- здесь написана простая реализация, где fmap = liftM, и pure = Ok, если все выполнилось
 -- Возвращает pure и применяет f к a
